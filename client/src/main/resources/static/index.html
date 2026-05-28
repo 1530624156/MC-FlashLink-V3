@@ -409,7 +409,7 @@
         $('joinRoom').disabled = !status.canJoin;
         $('leaveRoom').disabled = !status.canLeave;
 
-        if (status.serverBaseUrl) {
+        if (status.serverBaseUrl && status.role && status.role !== 'IDLE') {
             $('serverBaseUrl').value = status.serverBaseUrl;
         }
         if (status.roomCode && status.roomCode !== '-') {
