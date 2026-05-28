@@ -1,0 +1,11 @@
+server:
+  address: 127.0.0.1
+  port: 26333
+
+spring:
+  main:
+    banner-mode: "off"
+  web:
+    resources:
+      cache:
+        period: 0

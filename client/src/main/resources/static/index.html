@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MC-FlashLink V3</title>
+    <style>
+        :root {
+            --bg: #f2f4ef;
+            --ink: #172019;
+            --muted: #657066;
+            --line: #c9d0c7;
+            --panel: #fbfcf8;
+            --panel-strong: #ffffff;
+            --green: #147a50;
+            --green-dark: #0d5e3c;
+            --amber: #a35d00;
+            --red: #b3261e;
+            --blue: #175ea8;
+            --shadow: 0 14px 34px rgba(33, 45, 34, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background:
+                    linear-gradient(90deg, rgba(23, 32, 25, 0.04) 1px, transparent 1px),
+                    linear-gradient(0deg, rgba(23, 32, 25, 0.04) 1px, transparent 1px),
+                    var(--bg);
+            background-size: 28px 28px;
+            color: var(--ink);
+            font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+        }
+
+        .shell {
+            width: min(1120px, calc(100vw - 32px));
+            margin: 22px auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 18px;
+            border-bottom: 3px solid var(--ink);
+            padding-bottom: 14px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 34px;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .badge {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            padding: 9px 12px;
+            font-weight: 700;
+            color: var(--green-dark);
+            min-width: 168px;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 16px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .panel h2 {
+            margin: 0;
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--line);
+            background: var(--panel-strong);
+            font-size: 16px;
+            letter-spacing: 0;
+        }
+
+        .panel-body {
+            padding: 15px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .metric {
+            min-height: 82px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            padding: 11px;
+        }
+
+        .metric .label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .metric .value {
+            font-size: 18px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .wide {
+            grid-column: 1 / -1;
+        }
+
+        .forms {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .settings {
+            margin-top: 16px;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .required {
+            color: var(--red);
+        }
+
+        input {
+            width: 100%;
+            height: 39px;
+            border: 1px solid #aeb8ad;
+            border-radius: 6px;
+            background: #fff;
+            color: var(--ink);
+            padding: 0 10px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: 3px solid rgba(20, 122, 80, 0.18);
+            border-color: var(--green);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 9px;
+        }
+
+        button {
+            min-height: 40px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 0 12px;
+            color: #fff;
+            background: var(--green);
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--green-dark);
+        }
+
+        button.secondary {
+            color: var(--ink);
+            background: #fff;
+            border-color: var(--line);
+        }
+
+        button.secondary:hover:not(:disabled) {
+            background: #eef2ec;
+        }
+
+        button.warning {
+            background: var(--amber);
+        }
+
+        button.danger {
+            background: var(--red);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.48;
+        }
+
+        .log {
+            min-height: 112px;
+            border: 1px solid var(--line);
+            background: #101811;
+            color: #cdebd1;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .footer-note {
+            color: var(--muted);
+            margin-top: 12px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 820px) {
+            .topbar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .grid,
+            .forms,
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="shell">
+    <header class="topbar">
+        <div>
+            <h1>MC-FlashLink V3</h1>
+            <div class="subtitle">本地 Web 控制台 · 127.0.0.1:26333 · Wintun 虚拟局域网</div>
+        </div>
+        <div class="badge" id="connectionBadge">未连接</div>
+    </header>
+
+    <section class="grid">
+        <div class="panel">
+            <h2>虚拟局域网状态</h2>
+            <div class="panel-body">
+                <div class="status-grid">
+                    <div class="metric">
+                        <div class="label">房间人数</div>
+                        <div class="value" id="memberCount">0 人</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">身份</div>
+                        <div class="value" id="role">IDLE</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">房间号</div>
+                        <div class="value" id="roomCode">-</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">房间状态</div>
+                        <div class="value" id="roomStatus">未创建</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">本机虚拟 IP</div>
+                        <div class="value" id="virtualIp">-</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">房主 IP</div>
+                        <div class="value" id="hostVirtualIp">-</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">虚拟网段</div>
+                        <div class="value" id="subnetCidr">-</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">隧道模式</div>
+                        <div class="value" id="tunnelMode">-</div>
+                    </div>
+                    <div class="metric wide">
+                        <div class="label">虚拟网卡</div>
+                        <div class="value" id="adapterStatus">未接入 Wintun</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>运行日志</h2>
+            <div class="panel-body">
+                <div class="log" id="message">等待操作</div>
+                <div class="footer-note">本地服务只绑定 127.0.0.1。操作虚拟网卡需要用管理员权限启动客户端。</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel settings">
+        <h2>连接设置</h2>
+        <div class="panel-body">
+            <div class="field">
+                <label for="serverBaseUrl">服务地址 <span class="required">*</span></label>
+                <input id="serverBaseUrl" value="http://127.0.0.1:8080" required>
+            </div>
+        </div>
+    </section>
+
+    <section class="forms">
+        <div class="panel">
+            <h2>房主操作</h2>
+            <div class="panel-body">
+                <div class="field">
+                    <label for="hostId">房主标识 <span class="required">*</span></label>
+                    <input id="hostId" placeholder="host-1 或玩家 Token" required>
+                </div>
+                <div class="actions">
+                    <button id="createRoom">创建房间</button>
+                    <button id="dismissRoom" class="danger" disabled>解散房间</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>访客操作</h2>
+            <div class="panel-body">
+                <div class="field">
+                    <label for="guestRoomCode">房间号 <span class="required">*</span></label>
+                    <input id="guestRoomCode" placeholder="6 位房间号" required>
+                </div>
+                <div class="field">
+                    <label for="guestId">访客标识 <span class="required">*</span></label>
+                    <input id="guestId" placeholder="guest-1 或玩家 Token" required>
+                </div>
+                <div class="actions">
+                    <button id="joinRoom">加入房间</button>
+                    <button id="leaveRoom" class="warning" disabled>退出房间</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+    let lastStatus = null;
+
+    async function api(path, body) {
+        const response = await fetch(path, {
+            method: body ? 'POST' : 'GET',
+            headers: body ? {'Content-Type': 'application/json'} : {},
+            body: body ? JSON.stringify(body) : undefined
+        });
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+        return response.json();
+    }
+
+    function value(value, fallback) {
+        return value === undefined || value === null || value === '' ? fallback : value;
+    }
+
+    function formatRole(role) {
+        if (role === 'HOST') {
+            return '房主';
+        }
+        if (role === 'GUEST') {
+            return '访客';
+        }
+        return '未加入';
+    }
+
+    function applyStatus(status) {
+        lastStatus = status;
+        $('connectionBadge').textContent = value(status.connectionStatus, '未连接');
+        $('memberCount').textContent = value(status.memberCount, 0) + ' 人';
+        $('role').textContent = formatRole(status.role);
+        $('roomCode').textContent = value(status.roomCode, '-');
+        $('roomStatus').textContent = value(status.roomStatus, '未创建');
+        $('virtualIp').textContent = value(status.virtualIp, '-');
+        $('hostVirtualIp').textContent = value(status.hostVirtualIp, '-');
+        $('subnetCidr').textContent = value(status.subnetCidr, '-');
+        $('tunnelMode').textContent = value(status.tunnelMode, '-');
+        $('adapterStatus').textContent = value(status.adapterStatus, '-');
+        $('message').textContent = value(status.message, '等待操作');
+
+        $('createRoom').disabled = !status.canCreate;
+        $('dismissRoom').disabled = !status.canDismiss;
+        $('joinRoom').disabled = !status.canJoin;
+        $('leaveRoom').disabled = !status.canLeave;
+
+        if (status.serverBaseUrl) {
+            $('serverBaseUrl').value = status.serverBaseUrl;
+        }
+        if (status.roomCode && status.roomCode !== '-') {
+            $('guestRoomCode').value = status.roomCode;
+        }
+    }
+
+    async function refresh() {
+        applyStatus(await api('/api/local/status'));
+    }
+
+    async function run(action, payload) {
+        setBusy(true);
+        try {
+            applyStatus(await api(action, payload || {}));
+        } catch (error) {
+            $('message').textContent = '请求失败：' + error.message;
+            if (lastStatus) {
+                applyControls(lastStatus);
+            }
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    function applyControls(status) {
+        $('createRoom').disabled = !status.canCreate;
+        $('dismissRoom').disabled = !status.canDismiss;
+        $('joinRoom').disabled = !status.canJoin;
+        $('leaveRoom').disabled = !status.canLeave;
+    }
+
+    function setBusy(busy) {
+        if (busy) {
+            ['createRoom', 'dismissRoom', 'joinRoom', 'leaveRoom'].forEach((id) => $(id).disabled = true);
+            return;
+        }
+        if (lastStatus) {
+            applyControls(lastStatus);
+        }
+    }
+
+    $('createRoom').addEventListener('click', () => run('/api/local/create-room', {
+        serverBaseUrl: $('serverBaseUrl').value,
+        clientId: $('hostId').value
+    }));
+
+    $('dismissRoom').addEventListener('click', () => run('/api/local/dismiss-room'));
+
+    $('joinRoom').addEventListener('click', () => run('/api/local/join-room', {
+        serverBaseUrl: $('serverBaseUrl').value,
+        roomCode: $('guestRoomCode').value,
+        clientId: $('guestId').value
+    }));
+
+    $('leaveRoom').addEventListener('click', () => run('/api/local/leave-room'));
+
+    refresh();
+    setInterval(refresh, 10000);
+</script>
+</body>
+</html>

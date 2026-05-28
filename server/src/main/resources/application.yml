@@ -1,0 +1,12 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mc-flashlink-server
+
+mc-flash-link:
+  heartbeat-timeout-seconds: 15
+  room-clean-delay-ms: 5000
+  tunnel:
+    udp-port: 21000
