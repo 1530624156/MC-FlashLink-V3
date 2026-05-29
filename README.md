@@ -129,6 +129,48 @@ mvn -pl client -am clean package -DskipTests
 
 不要在 `client` 目录里单独运行 `mvn package`，否则 Maven 找不到同仓库的 `common` 模块。
 
+## 打包 Windows 可执行客户端
+
+如果要生成可直接双击的 Windows `.exe`，使用 `jpackage` 打包脚本。`jpackage` 需要 JDK 17 或 JDK 21；项目源码仍按 Java 8 编译，JDK 17/21 只用于生成 Windows app-image。
+
+脚本会自动在常见安装目录查找 JDK 17/21，例如 `C:\Program Files\Java\jdk-21`。如果机器上没有配置 PATH，也可以直接运行：
+
+```powershell
+.\scripts\package-client-jpackage.ps1
+```
+
+如果要手动指定 `jpackage` 所在 JDK：
+
+```powershell
+$env:JPACKAGE_JDK_HOME = "C:\Program Files\Java\jdk-21"
+.\scripts\package-client-jpackage.ps1
+```
+
+产物位置：
+
+- `client\target\jpackage\image\MCFlashLinkClient\MCFlashLinkClient.exe`
+- `client\target\MCFlashLinkClient-windows.zip`
+
+普通玩家双击 `MCFlashLinkClient.exe` 会自动请求管理员权限并打开本地控制台：
+
+```text
+http://127.0.0.1:26333
+```
+
+如果希望客户端随 Windows 后台运行，可以在解压目录中右键管理员运行：
+
+```powershell
+.\install-service.cmd
+```
+
+它会注册并启动 Windows 服务 `MCFlashLinkClient`。卸载服务：
+
+```powershell
+.\uninstall-service.cmd
+```
+
+服务模式不会自动弹浏览器；服务启动后手动访问 `http://127.0.0.1:26333` 即可使用客户端控制台。
+
 ## 本地客户端接口
 
 这些接口只绑定 `127.0.0.1:26333`，由内置 WebUI 调用：
