@@ -43,6 +43,14 @@ mvn -pl server -am spring-boot:run
 
 默认 UDP 隧道中转端口：`21000`
 
+服务端房间看板：
+
+```text
+http://127.0.0.1:8080/
+```
+
+看板会展示当前活跃房间、房间人数、房主标识、房主虚拟 IP、虚拟网段、隧道端口和心跳状态。
+
 ## 打包服务端
 
 ```powershell
@@ -133,6 +141,7 @@ mvn -pl client -am clean package -DskipTests
 
 ## 服务端接口
 
+- `GET /api/server/rooms`：服务端房间看板数据，返回当前活跃房间列表和总人数。
 - `POST /api/room/create`：创建房间，分配房主虚拟 IP，例如 `10.26.x.1`。
 - `POST /api/room/join`：加入房间，分配访客虚拟 IP，例如 `10.26.x.2`。
 - `POST /api/room/info`：查询房间状态和房间人数。

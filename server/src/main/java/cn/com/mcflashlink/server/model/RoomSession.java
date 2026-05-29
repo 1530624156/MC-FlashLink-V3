@@ -11,6 +11,7 @@ public class RoomSession {
     private final int subnetIndex;
     private final String subnetCidr;
     private final String hostVirtualIp;
+    private final Instant createdAt;
     private final Set<String> guestIds = ConcurrentHashMap.newKeySet();
     private final Map<String, String> guestVirtualIps = new ConcurrentHashMap<>();
     private volatile RoomStatus status;
@@ -24,8 +25,9 @@ public class RoomSession {
         this.subnetIndex = subnetIndex;
         this.subnetCidr = "10.26." + subnetIndex + ".0/24";
         this.hostVirtualIp = "10.26." + subnetIndex + ".1";
+        this.createdAt = Instant.now();
         this.status = RoomStatus.WAITING;
-        this.lastHostHeartbeatAt = Instant.now();
+        this.lastHostHeartbeatAt = createdAt;
     }
 
     public String getRoomCode() {
@@ -46,6 +48,10 @@ public class RoomSession {
 
     public String getHostVirtualIp() {
         return hostVirtualIp;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
     public synchronized String allocateGuestVirtualIp(String guestId) {

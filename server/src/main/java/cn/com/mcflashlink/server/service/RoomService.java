@@ -7,6 +7,8 @@ import cn.com.mcflashlink.common.dto.RoomInfoRequest;
 import cn.com.mcflashlink.common.dto.RoomJoinRequest;
 import cn.com.mcflashlink.common.dto.RoomLeaveRequest;
 import cn.com.mcflashlink.common.dto.RoomResponse;
+import cn.com.mcflashlink.server.dto.RoomOverview;
+import cn.com.mcflashlink.server.dto.RoomOverviewResponse;
 import cn.com.mcflashlink.server.model.RoomSession;
 import cn.com.mcflashlink.server.model.RoomStatus;
 import cn.com.mcflashlink.server.tunnel.UdpTunnelRelayServer;
@@ -19,9 +21,12 @@ import org.springframework.util.StringUtils;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
@@ -212,6 +217,24 @@ public class RoomService {
         return rooms.size();
     }
 
+    public RoomOverviewResponse roomOverviews() {
+        Instant now = Instant.now();
+        List<RoomOverview> roomOverviews = rooms.values()
+                .stream()
+                .filter(session -> session.getStatus() != RoomStatus.CLOSED)
+                .map(session -> toOverview(session, now))
+                .sorted(Comparator.comparing(RoomOverview::getRoomCode))
+                .collect(Collectors.toList());
+
+        int totalMemberCount = roomOverviews.stream()
+                .map(RoomOverview::getMemberCount)
+                .filter(memberCount -> memberCount != null)
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        return new RoomOverviewResponse(roomOverviews.size(), totalMemberCount, now.toEpochMilli(), roomOverviews);
+    }
+
     private String randomRoomCode() {
         return String.format("%06d", random.nextInt(ROOM_CODE_BOUND));
     }
@@ -251,6 +274,29 @@ public class RoomService {
 
     private int memberCount(RoomSession session) {
         return 1 + session.getGuestCount();
+    }
+
+    private RoomOverview toOverview(RoomSession session, Instant now) {
+        return new RoomOverview(
+                session.getRoomCode(),
+                session.getStatus().name(),
+                session.getHostId(),
+                session.getHostVirtualIp(),
+                session.getSubnetCidr(),
+                memberCount(session),
+                session.getGuestCount(),
+                TUNNEL_MODE,
+                tunnelPort,
+                secondsBetween(session.getCreatedAt(), now),
+                secondsBetween(session.getLastHostHeartbeatAt(), now),
+                secondsBetween(session.getLastGuestHeartbeatAt(), now));
+    }
+
+    private Long secondsBetween(Instant start, Instant end) {
+        if (start == null || end == null) {
+            return null;
+        }
+        return Duration.between(start, end).getSeconds();
     }
 
     private String virtualIpFor(String clientId, RoomSession session) {

@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MC-FlashLink Server</title>
+    <style>
+        :root {
+            --bg: #eef1ea;
+            --ink: #182018;
+            --muted: #687265;
+            --line: #bdc6ba;
+            --paper: #fbfcf7;
+            --paper-strong: #ffffff;
+            --green: #0d7a53;
+            --blue: #245d91;
+            --amber: #9b6400;
+            --red: #b22920;
+            --shadow: 0 10px 26px rgba(31, 42, 31, 0.10);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--ink);
+            background:
+                    linear-gradient(90deg, rgba(24, 32, 24, 0.055) 1px, transparent 1px),
+                    linear-gradient(0deg, rgba(24, 32, 24, 0.055) 1px, transparent 1px),
+                    var(--bg);
+            background-size: 32px 32px;
+            font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+        }
+
+        .shell {
+            width: min(1180px, calc(100vw - 32px));
+            margin: 24px auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 18px;
+            padding-bottom: 14px;
+            border-bottom: 3px solid var(--ink);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 32px;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stamp {
+            min-width: 176px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            background: var(--paper);
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        button {
+            min-height: 38px;
+            border: 1px solid var(--ink);
+            border-radius: 6px;
+            padding: 0 14px;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2d392d;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .metric {
+            min-height: 92px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--paper);
+            box-shadow: var(--shadow);
+            padding: 13px 14px;
+        }
+
+        .metric .label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .metric .value {
+            font-size: 28px;
+            font-weight: 900;
+            overflow-wrap: anywhere;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--paper);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--line);
+            background: var(--paper-strong);
+        }
+
+        .panel-head h2 {
+            margin: 0;
+            font-size: 16px;
+            letter-spacing: 0;
+        }
+
+        .status-text {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 930px;
+        }
+
+        th,
+        td {
+            padding: 12px 13px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        th {
+            color: var(--muted);
+            background: #f3f5f0;
+            font-weight: 800;
+        }
+
+        tbody tr:hover {
+            background: #f7f9f4;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .room-code {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 25px;
+            border-radius: 999px;
+            padding: 0 9px;
+            color: #fff;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .pill.waiting {
+            background: var(--amber);
+        }
+
+        .pill.connected {
+            background: var(--green);
+        }
+
+        .pill.closed {
+            background: var(--red);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .empty {
+            padding: 34px 15px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @media (max-width: 860px) {
+            .topbar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="shell">
+    <header class="topbar">
+        <div>
+            <h1>MC-FlashLink Server</h1>
+            <div class="subtitle">房间运行看板 · HTTP 8080 · UDP Relay</div>
+        </div>
+        <div class="toolbar">
+            <div class="stamp" id="updatedAt">尚未刷新</div>
+            <button id="refreshButton">刷新</button>
+        </div>
+    </header>
+
+    <section class="summary">
+        <div class="metric">
+            <div class="label">当前房间</div>
+            <div class="value" id="roomCount">0</div>
+        </div>
+        <div class="metric">
+            <div class="label">在线人数</div>
+            <div class="value" id="memberCount">0</div>
+        </div>
+        <div class="metric">
+            <div class="label">已连接房间</div>
+            <div class="value" id="connectedCount">0</div>
+        </div>
+        <div class="metric">
+            <div class="label">等待房间</div>
+            <div class="value" id="waitingCount">0</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <h2>房间列表</h2>
+            <div class="status-text" id="statusText">读取中</div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>房间号</th>
+                    <th>状态</th>
+                    <th>人数</th>
+                    <th>房主</th>
+                    <th>房主 IP</th>
+                    <th>虚拟网段</th>
+                    <th>隧道</th>
+                    <th>创建</th>
+                    <th>房主心跳</th>
+                    <th>访客心跳</th>
+                </tr>
+                </thead>
+                <tbody id="roomRows"></tbody>
+            </table>
+            <div class="empty" id="emptyState" hidden>当前没有活跃房间</div>
+        </div>
+    </section>
+</main>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+
+    function statusLabel(status) {
+        if (status === 'WAITING') {
+            return '等待成员';
+        }
+        if (status === 'CONNECTED') {
+            return '已连接';
+        }
+        if (status === 'CLOSED') {
+            return '已关闭';
+        }
+        return status || '-';
+    }
+
+    function statusClass(status) {
+        if (status === 'WAITING') {
+            return 'waiting';
+        }
+        if (status === 'CONNECTED') {
+            return 'connected';
+        }
+        if (status === 'CLOSED') {
+            return 'closed';
+        }
+        return 'waiting';
+    }
+
+    function secondsText(value) {
+        if (value === null || value === undefined) {
+            return '-';
+        }
+        if (value < 60) {
+            return value + ' 秒前';
+        }
+        const minutes = Math.floor(value / 60);
+        if (minutes < 60) {
+            return minutes + ' 分钟前';
+        }
+        return Math.floor(minutes / 60) + ' 小时前';
+    }
+
+    function value(text) {
+        return text === null || text === undefined || text === '' ? '-' : text;
+    }
+
+    function render(data) {
+        const rooms = data.rooms || [];
+        $('roomCount').textContent = data.roomCount || 0;
+        $('memberCount').textContent = data.totalMemberCount || 0;
+        $('connectedCount').textContent = rooms.filter((room) => room.roomStatus === 'CONNECTED').length;
+        $('waitingCount').textContent = rooms.filter((room) => room.roomStatus === 'WAITING').length;
+        $('updatedAt').textContent = new Date(data.generatedAtEpochMillis || Date.now()).toLocaleTimeString();
+        $('statusText').textContent = '读取成功';
+
+        $('roomRows').innerHTML = rooms.map((room) => `
+            <tr>
+                <td><span class="room-code">${value(room.roomCode)}</span></td>
+                <td><span class="pill ${statusClass(room.roomStatus)}">${statusLabel(room.roomStatus)}</span></td>
+                <td>${value(room.memberCount)} <span class="muted">(${value(room.guestCount)} 访客)</span></td>
+                <td>${value(room.hostId)}</td>
+                <td>${value(room.hostVirtualIp)}</td>
+                <td>${value(room.subnetCidr)}</td>
+                <td>${value(room.tunnelMode)} / ${value(room.tunnelPort)}</td>
+                <td>${secondsText(room.createdSecondsAgo)}</td>
+                <td>${secondsText(room.lastHostHeartbeatSecondsAgo)}</td>
+                <td>${secondsText(room.lastGuestHeartbeatSecondsAgo)}</td>
+            </tr>
+        `).join('');
+        $('emptyState').hidden = rooms.length !== 0;
+    }
+
+    async function refresh() {
+        $('statusText').textContent = '读取中';
+        try {
+            const response = await fetch('/api/server/rooms');
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            render(await response.json());
+        } catch (error) {
+            $('statusText').textContent = '读取失败：' + error.message;
+        }
+    }
+
+    $('refreshButton').addEventListener('click', refresh);
+    refresh();
+    setInterval(refresh, 5000);
+</script>
+</body>
+</html>

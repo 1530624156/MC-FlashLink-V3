@@ -7,6 +7,7 @@ import cn.com.mcflashlink.common.dto.RoomInfoRequest;
 import cn.com.mcflashlink.common.dto.RoomJoinRequest;
 import cn.com.mcflashlink.common.dto.RoomLeaveRequest;
 import cn.com.mcflashlink.common.dto.RoomResponse;
+import cn.com.mcflashlink.server.dto.RoomOverviewResponse;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,6 +80,36 @@ class RoomServiceTests {
 
         RoomResponse leaveAgain = roomService.leaveRoom(new RoomLeaveRequest(create.getRoomCode(), "guest-1"));
         assertEquals("FAILURE", leaveAgain.getStatus());
+    }
+
+    @Test
+    void exposesRoomOverviewForDashboard() {
+        RoomService roomService = new RoomService(15, 21000);
+        RoomResponse create = roomService.createRoom(new RoomCreateRequest("host-1"));
+        roomService.joinRoom(new RoomJoinRequest(create.getRoomCode(), "guest-1"));
+
+        RoomOverviewResponse overview = roomService.roomOverviews();
+
+        assertEquals(1, overview.getRoomCount());
+        assertEquals(2, overview.getTotalMemberCount());
+        assertEquals(create.getRoomCode(), overview.getRooms().get(0).getRoomCode());
+        assertEquals("host-1", overview.getRooms().get(0).getHostId());
+        assertEquals("CONNECTED", overview.getRooms().get(0).getRoomStatus());
+        assertEquals(Integer.valueOf(1), overview.getRooms().get(0).getGuestCount());
+        assertEquals(Integer.valueOf(21000), overview.getRooms().get(0).getTunnelPort());
+        assertNotNull(overview.getGeneratedAtEpochMillis());
+    }
+
+    @Test
+    void dashboardOverviewDoesNotIncludeDismissedRooms() {
+        RoomService roomService = new RoomService(15, 21000);
+        RoomResponse create = roomService.createRoom(new RoomCreateRequest("host-1"));
+        roomService.dismissRoom(new RoomDismissRequest(create.getRoomCode(), "host-1"));
+
+        RoomOverviewResponse overview = roomService.roomOverviews();
+
+        assertEquals(0, overview.getRoomCount());
+        assertEquals(0, overview.getTotalMemberCount());
     }
 
     @Test
